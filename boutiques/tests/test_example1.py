@@ -573,7 +573,6 @@ class TestExample1(BaseTest):
                           self.get_file_path("test_automount_desc.json"),
                           test_invoc,
                           "--skip-data-collection")
-
         try:
             self.assertIn('Hello, World!', ex.stdout)
         finally:

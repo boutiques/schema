@@ -60,15 +60,17 @@ def add_subparser_create(subparsers):
 
 def add_subparser_data(subparsers):
     parser_data = subparsers.add_parser(
-        "data", description="Manage execution data collection.")
+        "data", description="Manage execution data collection.",
+        formatter_class=RawTextHelpFormatter)
     parser_data.set_defaults(function='data')
     data_subparsers = parser_data.add_subparsers(
-        help="Manage execution data records. Inspect: displays "
-        "the unpublished records currently in the cache. "
+        help="Delete: remove one or more records from the cache.\n"
+        "Inspect: displays the unpublished records currently in the cache.\n"
         "Publish: publishes contents of cache to Zenodo as "
         "a public data set. Requires a Zenodo access token, "
-        "see http://developers.zenodo.org/#authentication. "
-        "Delete: remove one or more records from the cache.")
+        "see http://developers.zenodo.org/#authentication.\n"
+        "Pull: pull one or more execution data records from Zenodo.\n"
+        "Search: search for published execution data records on Zenodo.\n")
 
     parser_data_delete = data_subparsers.add_parser(
         "delete", description="Delete data record(s) in cache.")
@@ -133,6 +135,32 @@ def add_subparser_data(subparsers):
                                      help="Nexus organization to publish to. ")
     parser_data_publish.add_argument("--nexus-project", action="store",
                                      help="Nexus project to publish to. ")
+
+    parser_data_pull = data_subparsers.add_parser(
+        "pull", description="Ensures that execution data records from Zenodo"
+                            "are locally cached, downloading them if needed.")
+    parser_data_pull.set_defaults(mode='pull')
+    parser_data_pull.add_argument("zids", nargs="+", action="store",
+                                  help="One or more Zenodo IDs for the excution"
+                                  " record(s) to pull, prefixed by 'zenodo.',"
+                                  " e.g. zenodo.123456 zenodo.123457")
+    parser_data_pull.add_argument("-v", "--verbose", action="store_true",
+                                  help="Print information messages")
+    parser_data_pull.add_argument("--sandbox", action="store_true",
+                                  help="pull from Zenodo's sandbox instead of "
+                                  "production server. Recommended for tests.")
+
+    parser_data_search = data_subparsers.add_parser(
+        "search", description="Search on Zenodo for"
+                              " execution data records. When no term is"
+                              " supplied, will search for all execution"
+                              " data records.")
+    parser_data_search.set_defaults(mode='search')
+    parser_data_search.add_argument("-v", "--verbose", action="store_true",
+                                    help="Print information messages")
+    parser_data_search.add_argument("--sandbox", action="store_true",
+                                    help="search Zenodo's sandbox instead of "
+                                    "production server. Recommended for tests.")
 
 
 def add_subparser_deprecate(subparsers):

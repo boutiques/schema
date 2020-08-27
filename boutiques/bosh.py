@@ -389,23 +389,28 @@ def data(*params):
         parser.parse_known_args(params + ('--help',))
         raise_error(DataHandlerError,
                     "Missing data mode {delete, inspect, publish}.")
-    elif results.mode == "inspect":
+    else:
         from boutiques.dataHandler import DataHandler
         dataHandler = DataHandler()
-        return dataHandler.inspect(results.example)
-    elif results.mode == "publish":
-        from boutiques.dataHandler import DataHandler
-        dataHandler = DataHandler()
-        return dataHandler.publish(results.file, results.zenodo_token,
-                                   results.author, results.nexus_token,
-                                   results.nexus_org, results.nexus_project,
-                                   results.individually, results.sandbox,
-                                   results.no_int, results.verbose,
-                                   results.nexus)
-    elif results.mode == "delete":
-        from boutiques.dataHandler import DataHandler
-        dataHandler = DataHandler()
-        return dataHandler.delete(results.file, results.no_int)
+
+        if results.mode == "inspect":
+            return dataHandler.inspect(results.example)
+        elif results.mode == "publish":
+            return dataHandler.publish(results.file, results.zenodo_token,
+                                       results.author, results.nexus_token,
+                                       results.nexus_org, results.nexus_project,
+                                       results.individually, results.sandbox,
+                                       results.no_int, results.verbose,
+                                       results.nexus)
+        elif results.mode == "delete":
+            return dataHandler.delete(results.file, results.no_int)
+
+        elif results.mode == "search":
+            return dataHandler.search(results.verbose, results.sandbox)
+
+        elif results.mode == "pull":
+            return dataHandler.pull(results.zids, results.verbose,
+                                    results.sandbox)
 
 
 def deprecate(*params):
@@ -487,6 +492,9 @@ def bosh(args=None):
             return bosh_return(out, hide=True)
         elif func == "data":
             out = data(*params)
+            if params.__contains__("search"):
+                return bosh_return(out, formatted=tabulate(out, headers='keys',
+                                                           tablefmt='plain'))
             return bosh_return(out)
         elif func == "version":
             from boutiques.__version__ import VERSION
@@ -506,7 +514,8 @@ def bosh(args=None):
             ValidationError,
             ExportError,
             ImportError,
-            ExecutorError) as e:
+            ExecutorError,
+            DataHandlerError) as e:
         # We don't want to raise an exception when function is called
         # from CLI.'
         if runs_as_cli():
